@@ -1,0 +1,14 @@
+[features]
+seeds = false
+[programs.localnet]
+nft = "FETvoP1R2ZEaK8jZBVeG8c4VkVqHDP1fRz1Tb5QGhW1T"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "/home/kaylee/.config/solana/phantom.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/nft.ts"
