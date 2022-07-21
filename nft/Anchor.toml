@@ -11,4 +11,5 @@ cluster = "devnet"
 wallet = "/home/kaylee/.config/solana/phantom.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/nft.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json tests/nft.ts"
+product = "ts-node tests/nft.ts"

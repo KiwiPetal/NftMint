@@ -1,7 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { TokenContract } from "../target/types/token_contract";
-import addresses from "./SolanaAddressParse";
 import {
   TOKEN_PROGRAM_ID,
   MINT_SIZE,
@@ -11,7 +10,7 @@ import {
 } from "@solana/spl-token"; 
 import { assert } from "chai";
 
-
+describe("token-contract", () => {
   const nftTitle = "Testing Nft V2";
   const nftSymbol = "TESTV2";
   const nftUri = "https://raw.githubusercontent.com/KiwiPetal/NftTest/main/new.json";
@@ -24,18 +23,16 @@ import { assert } from "chai";
   // Retrieve the TokenContract struct from our smart contract
   const program = anchor.workspace.TokenContract as Program<TokenContract>;
   // Generate a random keypair that will represent our token
+  const mintKey: anchor.web3.Keypair = anchor.web3.Keypair.generate();
   // AssociatedTokenAccount for anchor's workspace wallet
   let associatedTokenAccount = undefined;
-  const key = anchor.AnchorProvider.env().wallet.publicKey;
-  let sendkey = undefined;
-  async function mintnft() {
-  for (let index = 7; index < addresses.length;) {
-    
+
+  it("Mint a token", async () => {
     // Get anchor's wallet's public key
-    let mintKey: anchor.web3.Keypair = anchor.web3.Keypair.generate();
-    sendkey = new anchor.web3.PublicKey(addresses[index]);
+    const key = anchor.AnchorProvider.env().wallet.publicKey;
+    const sendkey = new anchor.web3.PublicKey("9qz923RtkeWQEVCRMz2pAbjnc9F4cWskgw4zuaBRVxMu");
     // Get the amount of SOL needed to pay rent for our Token Mint
-    let lamports: number = await program.provider.connection.getMinimumBalanceForRentExemption(
+    const lamports: number = await program.provider.connection.getMinimumBalanceForRentExemption(
       MINT_SIZE
     );
 
@@ -46,7 +43,7 @@ import { assert } from "chai";
     );
 
     // Fires a list of instructions
-    let mint_tx = new anchor.web3.Transaction().add(
+    const mint_tx = new anchor.web3.Transaction().add(
       // Use anchor to create an account from the mint key that we created
       anchor.web3.SystemProgram.createAccount({
         fromPubkey: key,
@@ -66,9 +63,9 @@ import { assert } from "chai";
     );
 
     // sends and create the transaction
-    let res = await anchor.AnchorProvider.env().sendAndConfirm(mint_tx, [mintKey]);
+    const res = await anchor.AnchorProvider.env().sendAndConfirm(mint_tx, [mintKey]);
 
-    let metadataAddress = (await anchor.web3.PublicKey.findProgramAddress(
+    const metadataAddress = (await anchor.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("metadata"),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
@@ -77,7 +74,7 @@ import { assert } from "chai";
       TOKEN_METADATA_PROGRAM_ID
     ))[0];
 
-    let masterEditionAddress = (await anchor.web3.PublicKey.findProgramAddress(
+    const masterEditionAddress = (await anchor.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("metadata"),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
@@ -87,13 +84,13 @@ import { assert } from "chai";
       TOKEN_METADATA_PROGRAM_ID
     ))[0];
 
-    // console.log(
-    //   await program.provider.connection.getParsedAccountInfo(mintKey.publicKey)
-    // );
+    console.log(
+      await program.provider.connection.getParsedAccountInfo(mintKey.publicKey)
+    );
 
-    // console.log("Account: ", res);
-    // console.log("Mint key: ", mintKey.publicKey.toString());
-    // console.log("User: ", key.toString());
+    console.log("Account: ", res);
+    console.log("Mint key: ", mintKey.publicKey.toString());
+    console.log("User: ", key.toString());
 
     // Executes our code to mint our token into our specified ATA
     await program.methods.mintToken(
@@ -108,10 +105,38 @@ import { assert } from "chai";
     })
     .rpc();
 
-    console.log("Minted " + index + "/" + addresses.length + "For address: " + addresses[index]);
-    index += 1;
     
-  }
-  }
-  mintnft();
+  });
 
+  // it("Transfer token", async () => {
+  //   // Get anchor's wallet's public key
+  //   const myWallet = anchor.AnchorProvider.env().wallet.publicKey;
+  //   // Wallet that will receive the token 
+  //   const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+  //   // The ATA for a token on the to wallet (but might not exist yet)
+  //   const toATA = await getAssociatedTokenAddress(
+  //     mintKey.publicKey,
+  //     toWallet.publicKey
+  //   );
+
+  //   // Fires a list of instructions
+  //   const mint_tx = new anchor.web3.Transaction().add(
+  //     // Create the ATA account that is associated with our To wallet
+  //     createAssociatedTokenAccountInstruction(
+  //       myWallet, toATA, toWallet.publicKey, mintKey.publicKey
+  //     )
+  //   );
+
+  //   // Sends and create the transaction
+  //   await anchor.AnchorProvider.env().sendAndConfirm(mint_tx, []);
+
+  //   // Executes our transfer smart contract 
+  //   await program.methods.transferToken().accounts({
+  //     tokenProgram: TOKEN_PROGRAM_ID,
+  //     from: associatedTokenAccount,
+  //     fromAuthority: myWallet,
+  //     to: toATA,
+  //   }).rpc();
+
+  // });
+});
